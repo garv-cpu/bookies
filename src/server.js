@@ -3,11 +3,14 @@ import "dotenv/config";
 import cors from 'cors';
 import authRoutes from "./routes/authRoutes.js";
 import bookRoutes from './routes/bookRoutes.js'
+import job from "./lib/cron.js";
 
 import { connectDB } from "./lib/db.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+
+job.start(); // Start the cron job
 
 // Middlewares
 app.use(express.json());
