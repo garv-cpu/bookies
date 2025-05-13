@@ -43,12 +43,15 @@ export const registerUser = async (req, res) => {
     if (existingUsername)
       return res.status(400).json({ message: "Username already exists" });
 
+    // Generate random avatar
+    const profileImage = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${username}`;
+
     // Create the user
     const user = new User({
       username,
       email,
       password,
-      profileImage: "",
+      profileImage,
     });
 
     await user.save();
