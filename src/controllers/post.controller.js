@@ -45,11 +45,12 @@ export const createPost = async (req, res) => {
 
     res.status(201).json(newBook);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error("CreatePost Error:", error);
+    return res
+      .status(500)
+      .json({ message: error.message || "Internal server error" });
   }
 };
-
 
 // With pagination => Infinite scrolling
 export const getPosts = async (req, res) => {
@@ -103,22 +104,21 @@ export const deletePosts = async (req, res) => {
     await book.deleteOne();
 
     res.json({ message: "Post deleted successfully" });
-
   } catch (error) {
     console.error(error, "Error in deleting posts");
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const getRecommendedPostsUser = async (req, res) => {
   try {
-    const books = await Book
-    .find({ user: req.user._id })
-    .sort({ createdAt: -1 })
+    const books = await Book.find({ user: req.user._id }).sort({
+      createdAt: -1,
+    });
 
     res.json(books);
   } catch (error) {
     console.error(error, "Error in getting recommended posts");
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
