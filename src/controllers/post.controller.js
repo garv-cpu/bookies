@@ -17,9 +17,20 @@ export const createPost = async (req, res) => {
         .json({ message: "Rating should be between 1 and 5" });
     }
 
-    // Upload image to cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(image);
-    const imageUrl = uploadResponse.secure_url;
+    // Check if the image is base64-encoded or a URL
+    const isBase64 = image.startsWith("data:image");
+
+    let imageUrl = null;
+    if (isBase64) {
+      // Upload image to Cloudinary as base64
+      const uploadResponse = await cloudinary.uploader.upload(image, {
+        upload_preset: "your_upload_preset", // Optional: Add your preset if you have one
+      });
+      imageUrl = uploadResponse.secure_url;
+    } else {
+      // If image is URL, you can use it directly
+      imageUrl = image;
+    }
 
     // Create the book post
     const newBook = new Book({
@@ -38,6 +49,7 @@ export const createPost = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // With pagination => Infinite scrolling
 export const getPosts = async (req, res) => {

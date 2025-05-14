@@ -84,11 +84,6 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Please fill all the fields" });
     }
 
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password should be at least 6 characters long" });
-    }
 
     // Find user by email OR username
     const user = await User.findOne({
