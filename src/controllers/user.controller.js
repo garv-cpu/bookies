@@ -44,7 +44,9 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Username already exists" });
 
     // Generate random avatar
-    const profileImage = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${username}`;
+    const profileImage =
+      req.body.profileImage ||
+      `https://api.dicebear.com/9.x/pixel-art/svg?seed=${username}`;
 
     // Create the user
     const user = new User({
@@ -76,9 +78,9 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!email || !password) {
+    if (!identifier?.trim() || !password?.trim()) {
       return res.status(400).json({ message: "Please fill all the fields" });
     }
 
@@ -88,34 +90,30 @@ export const loginUser = async (req, res) => {
         .json({ message: "Password should be at least 6 characters long" });
     }
 
-    if (!email.includes("@")) {
-      return res.status(400).json({ message: "Please enter a valid email" });
+    // Find user by email OR username
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Check if user exists
-    const userEmail = await User.findOne({ email });
-
-    if (!userEmail) {
-      return res.status(400).json({ message: "Invalid Credentials" });
-    }
-
-    // Check if password is correct
-    const isMatch = await userEmail.comparePassword(password);
+    const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid Credentials" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT token
-    const token = generateToken(userEmail._id);
+    const token = generateToken(user._id);
 
     res.status(200).json({
       token,
       user: {
-        id: userEmail._id,
-        username: userEmail.username,
-        email: userEmail.email,
-        profileImage: userEmail.profileImage,
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage,
       },
     });
   } catch (error) {
